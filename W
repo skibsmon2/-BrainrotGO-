@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Collect The Brainrots</title>
+<style>
+  :root{
+    --sky1:#62c8ff;
+    --sky2:#9fe3ff;
+    --grass1:#42d35a;
+    --grass2:#b7ff9d;
+    --panel:#0b2a55;
+    --panel2:#0e3a79;
+    --ink:#0b1020;
+    --card:#ffffffee;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    color:#0b1020;
+    background: linear-gradient(var(--sky1), var(--sky2) 55%, var(--grass1) 55%, var(--grass2));
+    height:100vh;
+    overflow:hidden;
+  }
+  header{
+    height:56px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 12px;
+    background: linear-gradient(90deg, var(--panel), var(--panel2));
+    color:white;
+    border-bottom: 2px solid rgba(255,255,255,.25);
+  }
+  header .left{
+    display:flex; gap:10px; align-items:center;
+    font-weight:800;
+  }
+  header .right{
+    display:flex; gap:8px; align-items:center;
+    font-weight:700;
+  }
+  .pill{
+    background: rgba(255,255,255,.16);
+    border:1px solid rgba(255,255,255,.25);
+    padding:6px 10px;
+    border-radius:999px;
+    white-space:nowrap;
+  }
+  button{
+    border:1px solid rgba(255,255,255,.25);
+    background: rgba(255,255,255,.16);
+    color:white;
+    padding:7px 10px;
+    border-radius:10px;
+    font-weight:800;
+    cursor:pointer;
+  }
+  button:hover{filter:brightness(1.15)}
+  button:active{transform:translateY(1px)}
+  #wrap{
+    height: calc(100vh - 56px);
+    display:grid;
+    grid-template-columns: 360px 1fr 360px;
+    gap:10px;
+    padding:10px;
+  }
+  .panel{
+    background: rgba(255,255,255,.16);
+    border:1px solid rgba(255,255,255,.22);
+    border-radius:16px;
+    padding:10px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  .panel h2{
+    margin:0 0 8px 0;
+    font-size:15px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    color:#071533;
+  }
+  .sub{
+    font-size:12px;
+    opacity:.75;
+    font-weight:700;
+  }
+
+  /* World area */
+  #world{
+    position:relative;
+    border-radius:18px;
+    border:1px solid rgba(255,255,255,.25);
+    overflow:hidden;
+    background:
+      radial-gradient(circle at 25% 15%, rgba(255,255,255,.9), rgba(255,255,255,0) 35%),
+      radial-gradient(circle at 65% 20%, rgba(255,255,255,.75), rgba(255,255,255,0) 40%),
+      linear-gradient(#5fc7ff, #9fe3ff 55%, #34c757 55%, #b7ff9d);
+  }
+  .worldTop{
+    position:absolute;
+    left:10px; right:10px; top:10px;
+    display:flex; gap:8px; flex-wrap:wrap;
+    align-items:center;
+    z-index:5;
+  }
+  select{
+    padding:8px 10px;
+    border-radius:10px;
+    border:1px solid rgba(0,0,0,.15);
+    background:rgba(255,255,255,.9);
+    font-weight:800;
+  }
+  .spawnCard{
+    position:absolute;
+    width:220px;
+    background: var(--card);
+    border:2px solid rgba(0,0,0,.12);
+    border-radius:14px;
+    padding:8px;
+    cursor:pointer;
+    user-select:none;
+    box-shadow: 0 10px 24px rgba(0,0,0,.18);
+    animation: pop .18s ease-out;
+  }
+  .spawnCard:hover{transform:scale(1.03)}
+  @keyframes pop{from{transform:scale(.7);opacity:.3}to{transform:scale(1);opacity:1}}
+  .spawnRow{
+    display:flex; gap:8px; align-items:center;
+  }
+  .spawnImg{
+    width:52px; height:52px;
+    border-radius:12px;
+    border:1px solid rgba(0,0,0,.15);
+    background: white;
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+    flex:0 0 auto;
+  }
+  .spawnImg img{width:100%;height:100%;object-fit:cover}
+  .spawnName{
+    font-weight:900;
+    font-size:13px;
+    line-height:1.1;
+  }
+  .spawnMeta{
+    margin-top:6px;
+    font-size:12px;
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    font-weight:800;
+  }
+  .tag{
+    padding:3px 8px;
+    border-radius:999px;
+    background:rgba(12,60,130,.10);
+    border:1px solid rgba(12,60,130,.15);
+  }
+
+  /* Lists */
+  .list{
+    overflow:auto;
+    padding-right:4px;
+  }
+  .row{
+    display:flex; gap:10px; align-items:center;
+    padding:8px;
+    background: rgba(255,255,255,.60);
+    border:1px solid rgba(0,0,0,.08);
+    border-radius:14px;
+    margin-bottom:8px;
+  }
+  .row .mini{
+    width:44px;height:44px;border-radius:12px;
+    background:white;border:1px solid rgba(0,0,0,.12);
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+    flex:0 0 auto;
+  }
+  .row .mini img{width:100%;height:100%;object-fit:cover}
+  .row .info{flex:1}
+  .row .title{font-weight:900;font-size:13px}
+  .row .small{font-size:12px;opacity:.78;font-weight:800}
+  .row .right{font-weight:900;font-size:12px;white-space:nowrap}
+  .muted{opacity:.75;font-weight:800;font-size:12px}
+  .kbtn{
+    border:1px solid rgba(0,0,0,.12);
+    background: rgba(255,255,255,.75);
+    color:#0b1020;
+    padding:6px 10px;
+    border-radius:10px;
+    font-weight:900;
+  }
+  .kbtn:hover{filter:brightness(1.06)}
+  .gridSlots{
+    display:grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap:8px;
+    padding:2px;
+    overflow:auto;
+  }
+  .slot{
+    height:62px;
+    border-radius:14px;
+    border:1px dashed rgba(0,0,0,.20);
+    background: rgba(255,255,255,.45);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:6px;
+    font-size:11px;
+    font-weight:900;
+    cursor:pointer;
+  }
+  .slot.filled{
+    border-style:solid;
+    background: rgba(255,255,255,.75);
+  }
+  .toast{
+    position:absolute;
+    left:50%;
+    top:70px;
+    transform:translateX(-50%);
+    background: rgba(0,0,0,.80);
+    color:white;
+    font-weight:900;
+    padding:10px 14px;
+    border-radius:14px;
+    z-index:999;
+    animation: toast 2.2s forwards;
+    white-space:nowrap;
+  }
+  @keyframes toast{
+    0%{opacity:0;transform:translateX(-50%) translateY(-8px)}
+    15%{opacity:1;transform:translateX(-50%) translateY(0)}
+    85%{opacity:1}
+    100%{opacity:0;transform:translateX(-50%) translateY(-8px)}
+  }
+  .modalBack{
+    position:fixed; inset:0;
+    background: rgba(0,0,0,.45);
+    display:none;
+    align-items:center; justify-content:center;
+    z-index:2000;
+  }
+  .modal{
+    width:min(900px, 92vw);
+    max-height: min(84vh, 900px);
+    overflow:auto;
+    background: rgba(255,255,255,.95);
+    border:1px solid rgba(0,0,0,.15);
+    border-radius:18px;
+    padding:12px;
+  }
+  .modal h3{margin:4px 0 10px 0}
+  .modal .close{
+    float:right;
+    border:1px solid rgba(0,0,0,.15);
+    background:white;
+    color:#0b1020;
+    padding:6px 10px;
+    border-radius:10px;
+    font-weight:900;
+  }
+  .cols{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:10px;
+  }
+  @media (max-width: 1100px){
+    #wrap{grid-template-columns: 1fr; height:auto; overflow:auto}
+    body{overflow:auto}
+    #world{height:520px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="left">🧠 Collect The Brainrots</div>
+  <div class="right">
+    <div class="pill" id="moneyPill">$0</div>
+    <div class="pill" id="epsPill">+0/sec</div>
+    <div class="pill" id="rebirthPill">Rebirth 1</div>
+    <button id="btnIndex">Index</button>
+    <button id="btnReset">Reset Save</button>
+  </div>
+</header>
+
+<div id="wrap">
+  <!-- LEFT: Base -->
+  <div class="panel">
+    <h2>
+      <span>🏡 Base</span>
+      <span class="sub" id="slotsInfo">Slots: 0/10</span>
+    </h2>
+    <div class="muted">Your placed Brainrots earn money every second. Tap a filled slot to remove it.</div>
+    <div style="height:10px"></div>
+    <div class="gridSlots" id="baseGrid"></div>
+    <div style="height:10px"></div>
+    <button class="kbtn" id="btnRebirth">Rebirth</button>
+    <div class="muted" id="rebirthReq" style="margin-top:8px"></div>
+  </div>
+
+  <!-- CENTER: World -->
+  <div class="panel" style="padding:0">
+    <div id="world">
+      <div class="worldTop">
+        <select id="worldSelect"></select>
+        <div class="pill" style="background:rgba(255,255,255,.22)">3 spawns max • click to catch</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Storage -->
+  <div class="panel">
+    <h2>
+      <span>🎒 Storage</span>
+      <span class="sub" id="ownedInfo">Owned: 0</span>
+    </h2>
+    <div class="muted">If base is full, caught Brainrots go here. Tap “Place” to add to base.</div>
+    <div style="height:10px"></div>
+    <div class="list" id="ownedList"></div>
+  </div>
+</div>
+
+<!-- INDEX MODAL -->
+<div class="modalBack" id="indexBack">
+  <div class="modal">
+    <button class="close" id="btnCloseIndex">Close</button>
+    <h3>📚 Index (Collection)</h3>
+    <div class="muted">Shows every Brainrot in the game. Your owned counts include variants.</div>
+    <div style="height:10px"></div>
+    <div class="cols">
+      <div>
+        <h3 style="margin:0 0 8px 0;font-size:14px">By Rarity</h3>
+        <div id="indexByRarity"></div>
+      </div>
+      <div>
+        <h3 style="margin:0 0 8px 0;font-size:14px">Your Stats</h3>
+        <div class="row">
+          <div class="info">
+            <div class="title">Total Owned</div>
+            <div class="small" id="statTotalOwned">0</div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="info">
+            <div class="title">Variants Owned</div>
+            <div class="small" id="statVariantsOwned">0</div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="info">
+            <div class="title">Money</div>
+            <div class="small" id="statMoney">$0</div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="info">
+            <div class="title">Earnings/sec</div>
+            <div class="small" id="statEPS">0</div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="info">
+            <div class="title">Rebirth</div>
+            <div class="small" id="statRebirth">1</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===============================
+   RAW URL HELPER
+================================ */
+function raw(url){
+  // converts github blob links to raw
+  return url.replace("github.com/", "raw.githubusercontent.com/")
+            .replace("/blob/", "/");
+}
+
+/* ===============================
+   VARIANTS & CHANCES
+================================ */
+const VARIANT_MULT = {
+  Normal: 1,
+  Gold: 2,
+  Diamond: 4,
+  Emerald: 6,
+  Ruby: 8,
+  Rainbow: 10
+};
+
+const VARIANT_ROLL = [
+  { v:"Rainbow", c:0.0005 }, // 0.05% = 1/2000 (rarest)
+  { v:"Ruby",    c:0.003  }, // 0.3%
+  { v:"Emerald", c:0.006  }, // 0.6%
+  { v:"Diamond", c:0.03   }, // 3%
+  { v:"Gold",    c:0.10   }, // 10%
+  { v:"Normal",  c:1      }
+];
+
+function rollVariant(){
+  let r = Math.random();
+  for(const o of VARIANT_ROLL){
+    r -= o.c;
+    if(r <= 0) return o.v;
+  }
+  return "Normal";
+}
+
+const CAPTURE_CHANCE = {
+  Common: 0.50,
+  Uncommon: 0.40,
+  Rare: 0.30,
+  Epic: 0.20,
+  Legendary: 0.14,
+  Mythic: 0.10,
+  Godly: 0.06,
+  Secret: 0.025,
+  Exotic: 0.008
+};
+
+/* ===============================
+   WORLDS (simple flavor + weights)
+================================ */
+const WORLDS = [
+  { id:"Park",   label:"🌳 Park",   mod:{Common:1.2, Uncommon:1.1, Rare:1.0, Epic:0.9, Legendary:0.8, Mythic:0.6, Godly:0.4, Secret:0.25, Exotic:0.12} },
+  { id:"Beach",  label:"🏖️ Beach",  mod:{Common:1.0, Uncommon:1.0, Rare:1.1, Epic:1.05, Legendary:0.95, Mythic:0.8, Godly:0.6, Secret:0.35, Exotic:0.15} },
+  { id:"Desert", label:"🏜️ Desert", mod:{Common:0.9, Uncommon:0.95, Rare:1.0, Epic:1.0, Legendary:1.1, Mythic:1.0, Godly:0.8, Secret:0.5, Exotic:0.22} },
+  { id:"City",   label:"🌆 City",   mod:{Common:0.9, Uncommon:0.9, Rare:1.0, Epic:1.05, Legendary:1.05, Mythic:1.0, Godly:0.9, Secret:0.65, Exotic:0.3} },
+  { id:"Void",   label:"🕳️ Void",   mod:{Common:0.6, Uncommon:0.7, Rare:0.85, Epic:1.0, Legendary:1.1, Mythic:1.15, Godly:1.1, Secret:1.0, Exotic:0.8} },
+];
+
+/* ===============================
+   FULL BRAINROT ROSTER
+   (All characters we’ve defined so far)
+================================ */
+const BRAINROTS = [
+  // COMMON
+  { name:"Svinina Bombardino", emoji:"🐷💣", rarity:"Common", earn:1, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_0494.webp") },
+  { name:"Pipi Kiwi", emoji:"🥝🦝", rarity:"Common", earn:15, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_3912.jpeg") },
+  { name:"Frulli Frulla", emoji:"🕶️🕊️", rarity:"Common", earn:6, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_3909.webp") },
+  { name:"Trippi Troppi", emoji:"🦐🐱", rarity:"Common", earn:7, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_1940.webp") },
+  { name:"Talpa di Ferro", emoji:"🐁💎", rarity:"Common", earn:10, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_4120.webp") },
+  { name:"Lirli Larila", emoji:"🐘🌵", rarity:"Common", earn:5, img: null },
+
+  // UNCOMMON
+  { name:"Aggarini La Panili", emoji:"🪏😭", rarity:"Uncommon", earn:120, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_4138.png") },
+  { name:"Crabito Cocosito", emoji:"🦀🥥", rarity:"Uncommon", earn:150, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_3999.png") },
+
+  // RARE
+  { name:"Pipi Corni", emoji:"🐭🌽", rarity:"Rare", earn:1500, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_3975.webp") },
+  { name:"Ta Ta Ta Sahur", emoji:"🪵🫖", rarity:"Rare", earn:1600, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_0487.webp") },
+  { name:"Bobrito Bandito", emoji:"🔫🦫", rarity:"Rare", earn:1700, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_4128.webp") },
+  { name:"Boneca Ambalabu", emoji:"🛞🐸", rarity:"Rare", earn:1800, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_4125.webp") },
+  { name:"Gangster Footera", emoji:"🦶", rarity:"Rare", earn:1900, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_3976.webp") },
+
+  // EPIC
+  { name:"Alessio", emoji:"⚽️🧢", rarity:"Epic", earn:4200, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_4116.jpeg") },
+  { name:"Avocadini Antelopini", emoji:"🦌🥑", rarity:"Epic", earn:4200, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_4142.jpeg") },
+  { name:"Tric Trac Baraboom", emoji:"🦶🥒", rarity:"Epic", earn:4600, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_3977.png") },
+  { name:"Cappucino Assassino", emoji:"🥤☕️🗡️🥋", rarity:"Epic", earn:5200, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_3917.png") },
+  { name:"Trulimero Trulichina", emoji:"🐱🐟", rarity:"Epic", earn:5000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_4119.webp") },
+  { name:"Burbaloli Luliloli", emoji:"🦝🥥", rarity:"Epic", earn:5600, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_3963.webp") },
+  { name:"Bambini Crostini", emoji:"🥟🦌", rarity:"Epic", earn:5400, img: null },
+  { name:"Avocadini Guffo", emoji:"🦉🥑", rarity:"Epic", earn:4100, img: null },
+  { name:"Pippi Poppa Pippo Peppe (Pigeon Version)", emoji:"🕊️🦶", rarity:"Epic", earn:4300, img: null },
+
+  // LEGENDARY
+  { name:"Chimpanzini Bananini", emoji:"🐵🍌", rarity:"Legendary", earn:7000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_1932.webp") },
+  { name:"Blueberrini Octopussini", emoji:"🫐🐙", rarity:"Legendary", earn:7400, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_1930.webp") },
+  { name:"Glorbo Fruttodrillo", emoji:"🍉🐊", rarity:"Legendary", earn:7600, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_0492.webp") },
+  { name:"Brr Brr Patapim", emoji:"🦧🌳", rarity:"Legendary", earn:7800, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_4112.jpeg") },
+  { name:"Pipi Potato", emoji:"🥔🐹", rarity:"Legendary", earn:6800, img: null },
+  { name:"Quivioli Ameleonni", emoji:"🥝🦎", rarity:"Legendary", earn:7200, img: null },
+
+  // MYTHIC
+  { name:"Zibra Zubra Zibralini", emoji:"🦓🍉", rarity:"Mythic", earn:9000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_1927.webp") },
+  { name:"Ecco Cavallo Virtuoso", emoji:"🎹🐴", rarity:"Mythic", earn:9200, img: null },
+  { name:"Leonelli Cactuselli", emoji:"🦁🌵", rarity:"Mythic", earn:8800, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_3913.webp") },
+  { name:"Centralucci Nuclearucci", emoji:"🤪☢️", rarity:"Mythic", earn:9600, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_3993.jpeg") },
+  { name:"Bananito Bandito", emoji:"🤑🍌", rarity:"Mythic", earn:10000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_4160.jpeg") },
+
+  // GODLY (current balanced values)
+  { name:"Dug Dug Dug Dug Bedug Dug", emoji:"👀🪘", rarity:"Godly", earn:200000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_3926.webp") },
+  { name:"Orcalero Orcala", emoji:"⚫️🦈", rarity:"Godly", earn:160000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_4135.webp") },
+  { name:"Bulbito Bandito Traktorito", emoji:"🚜🥔", rarity:"Godly", earn:110000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_3233.webp") },
+  { name:"Trenostruzzo Turbo 3000", emoji:"🚽🚂🦤", rarity:"Godly", earn:125000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_4144.webp") },
+  { name:"Trippi Troppi Troppa Trippa", emoji:"🐟🫃🦟", rarity:"Godly", earn:110000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_1939.jpeg") },
+  { name:"Tung Tung Tung Sahur", emoji:"👀🪵", rarity:"Godly", earn:42000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_1734.webp") },
+  { name:"Tralalero Tralala", emoji:"🦈🥿", rarity:"Godly", earn:90000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_4107.webp") },
+  { name:"Aquanaut", emoji:"🌊🥺💧🧑‍🚀", rarity:"Godly", earn:70000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_4115.webp") },
+  { name:"Ganganzeli Trulala", emoji:"💪🦒🍊🎩", rarity:"Godly", earn:60000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_1929.webp") },
+  { name:"Odin Din Din Dun", emoji:"💪🍊", rarity:"Godly", earn:50000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_3923.webp") },
+  { name:"Espresso Signora", emoji:"🚬☕️", rarity:"Godly", earn:42000, img: null },
+  { name:"Matteo", emoji:"🐵🕶️", rarity:"Godly", earn:28000, img: null },
+  { name:"Ballerino Lololo", emoji:"🩰🥛", rarity:"Godly", earn:28000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_4129.png") },
+  { name:"Lerulerulerule", emoji:"🌵🐧", rarity:"Godly", earn:26000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_1928.webp") },
+  { name:"Brr es Teh Patipum", emoji:"🥃🍋", rarity:"Godly", earn:24000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_4113.webp") },
+
+  // SECRET
+  { name:"La Vacca Saturno Saturnita", emoji:"🐄🪐", rarity:"Secret", earn:1200000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_0493.webp") },
+  { name:"Los Tralaleritos", emoji:"🥺🦈", rarity:"Secret", earn:1400000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_3944.webp") },
+  { name:"Los Orcaleritos", emoji:"🦈⚫️", rarity:"Secret", earn:1600000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_4108.png") },
+  { name:"Los Tungtungtungcitos", emoji:"🪵🥺", rarity:"Secret", earn:1800000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_3997.webp") },
+  { name:"Chicleteira Bicicleteira", emoji:"🎰🚲", rarity:"Secret", earn:2000000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_2075.webp") },
+  { name:"Pizzanini Bicletera", emoji:"🚲🍕", rarity:"Secret", earn:4200000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_4137.webp") },
+  { name:"Pirulitoita Bicicletaire", emoji:"🍭🚲", rarity:"Secret", earn:2200000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_1882.webp") },
+  { name:"Coccodrillo Formaggioso", emoji:"🐊🧀", rarity:"Secret", earn:5000000, img: null },
+  { name:"Rang Ring Reng Bus Ireng", emoji:"🚌🕋", rarity:"Secret", earn:3000000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_4141.webp") },
+  { name:"Pot Hotspot", emoji:"📲💀", rarity:"Secret", earn:1800000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_3915.webp") },
+  { name:"Malamé Amaralé", emoji:"🪨🦶🥺🦶", rarity:"Secret", earn:4200000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_3978.png") },
+  { name:"Darr Dirr Dorr Durr Telur Dadar", emoji:"🍳🥞👀", rarity:"Secret", earn:2200000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_3995.webp") },
+  { name:"Tob Tobi Tob", emoji:"🐪🌵", rarity:"Secret", earn:2400000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_2521.webp") },
+
+  // EXOTIC (current ordering)
+  { name:"Dragon Canelloni", emoji:"🍝🐉", rarity:"Exotic", earn:300000000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_3991.jpeg") },
+  { name:"Spaghetti Tualetti", emoji:"🍝🚽", rarity:"Exotic", earn:240000000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_1925.webp") },
+  { name:"Garama and Madungdung", emoji:"🧂🍯", rarity:"Exotic", earn:200000000, img: null },
+  { name:"Ketupat Kepat", emoji:"🥙", rarity:"Exotic", earn:220000000, img: null },
+  { name:"La Esok Sekolah", emoji:"🏠9️⃣👅👀", rarity:"Exotic", earn:160000000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_3924.webp") },
+  { name:"La Grande Combinazione", emoji:"🪵🐘🐸🦐🦈👀", rarity:"Exotic", earn:140000000, img: raw("https://github.com/skibsmon2/BootyHole/blob/main/IMG_2513.webp") },
+];
+
+/* ===============================
+   SAVE / STATE
+================================ */
+const SAVE_KEY = "collect_brainrots_save_v3";
+function blankState(){
+  return {
+    money: 30,
+    rebirth: 1,
+    // owned: map key -> count. key = name|variant
+    owned: {},
+    // base: array of placed slots: {name,variant}
+    base: Array(10).fill(null),
+  };
+}
+let STATE = loadState();
+
+function loadState(){
+  const raw = localStorage.getItem(SAVE_KEY);
+  if(!raw) return blankState();
+  try{
+    const s = JSON.parse(raw);
+    // migrate safely
+    if(!s.base) s.base = Array(10).fill(null);
+    if(!s.owned) s.owned = {};
+    if(!s.money && s.money !== 0) s.money = 0;
+    if(!s.rebirth) s.rebirth = 1;
+    // enforce base slots based on rebirth
+    const slots = baseSlotsForRebirth(s.rebirth);
+    if(s.base.length !== slots){
+      const newBase = Array(slots).fill(null);
+      for(let i=0;i<Math.min(slots, s.base.length);i++) newBase[i] = s.base[i] ?? null;
+      s.base = newBase;
+    }
+    return s;
+  }catch{
+    return blankState();
+  }
+}
+function saveState(){
+  localStorage.setItem(SAVE_KEY, JSON.stringify(STATE));
+}
+
+/* ===============================
+   HELPERS
+================================ */
+function toast(msg){
+  const t = document.createElement("div");
+  t.className = "toast";
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 2200);
+}
+
+function keyOf(name, variant){ return `${name}|${variant}`; }
+function ownedCount(name, variant){
+  return STATE.owned[keyOf(name,variant)] || 0;
+}
+function addOwned(name, variant, n=1){
+  const k = keyOf(name,variant);
+  STATE.owned[k] = (STATE.owned[k] || 0) + n;
+}
+function removeOwned(name, variant, n=1){
+  const k = keyOf(name,variant);
+  STATE.owned[k] = (STATE.owned[k] || 0) - n;
+  if(STATE.owned[k] <= 0) delete STATE.owned[k];
+}
+function findBrainrot(name){
+  return BRAINROTS.find(b => b.name === name);
+}
+function baseSlotsForRebirth(r){
+  if(r >= 3) return 14;
+  if(r >= 2) return 12;
+  return 10;
+}
+function fmtMoney(n){
+  if(n >= 1e9) return (n/1e9).toFixed(2) + "B";
+  if(n >= 1e6) return (n/1e6).toFixed(2) + "M";
+  if(n >= 1e3) return (n/1e3).toFixed(2) + "K";
+  return String(Math.floor(n));
+}
+function rarityRank(r){
+  const order = ["Common","Uncommon","Rare","Epic","Legendary","Mythic","Godly","Secret","Exotic"];
+  return order.indexOf(r);
+}
+
+/* ===============================
+   UI ELEMENTS
+================================ */
+const moneyPill = document.getElementById("moneyPill");
+const epsPill = document.getElementById("epsPill");
+const rebirthPill = document.getElementById("rebirthPill");
+
+const baseGrid = document.getElementById("baseGrid");
+const slotsInfo = document.getElementById("slotsInfo");
+const ownedList = document.getElementById("ownedList");
+const ownedInfo = document.getElementById("ownedInfo");
+const rebirthReq = document.getElementById("rebirthReq");
+
+const worldEl = document.getElementById("world");
+const worldSelect = document.getElementById("worldSelect");
+
+const indexBack = document.getElementById("indexBack");
+const btnIndex = document.getElementById("btnIndex");
+const btnCloseIndex = document.getElementById("btnCloseIndex");
+const indexByRarity = document.getElementById("indexByRarity");
+
+const statTotalOwned = document.getElementById("statTotalOwned");
+const statVariantsOwned = document.getElementById("statVariantsOwned");
+const statMoney = document.getElementById("statMoney");
+const statEPS = document.getElementById("statEPS");
+const statRebirth = document.getElementById("statRebirth");
+
+document.getElementById("btnReset").onclick = ()=>{
+  if(confirm("Reset your save? This deletes progress.")){
+    localStorage.removeItem(SAVE_KEY);
+    STATE = blankState();
+    saveState();
+    clearSpawns();
+    renderAll();
+    toast("Save reset.");
+  }
+};
+
+btnIndex.onclick = ()=>{
+  renderIndex();
+  indexBack.style.display = "flex";
+};
+btnCloseIndex.onclick = ()=> indexBack.style.display = "none";
+indexBack.onclick = (e)=>{ if(e.target === indexBack) indexBack.style.display="none"; };
+
+/* ===============================
+   WORLDS UI
+================================ */
+let CURRENT_WORLD = WORLDS[0].id;
+function initWorldSelect(){
+  worldSelect.innerHTML = "";
+  for(const w of WORLDS){
+    const opt = document.createElement("option");
+    opt.value = w.id;
+    opt.textContent = w.label;
+    worldSelect.appendChild(opt);
+  }
+  worldSelect.value = CURRENT_WORLD;
+  worldSelect.onchange = ()=>{
+    CURRENT_WORLD = worldSelect.value;
+    toast(`World: ${WORLDS.find(w=>w.id===CURRENT_WORLD).label}`);
+  };
+}
+
+/* ===============================
+   SPAWNS
+================================ */
+const MAX_SPAWNS = 3;
+let spawns = []; // {id, brainrotName, node}
+let spawnId = 0;
+
+function clearSpawns(){
+  for(const s of spawns) s.node?.remove();
+  spawns = [];
+}
+function makeSpawn(br){
+  // card
+  const card = document.createElement("div");
+  card.className = "spawnCard";
+
+  const imgBox = document.createElement("div");
+  imgBox.className = "spawnImg";
+  if(br.img){
+    const im = document.createElement("img");
+    im.src = br.img;
+    im.alt = br.name;
+    imgBox.appendChild(im);
+  }else{
+    imgBox.textContent = br.emoji || "❓";
+  }
+
+  const nameBox = document.createElement("div");
+  nameBox.style.flex = "1";
+  const nm = document.createElement("div");
+  nm.className = "spawnName";
+  nm.textContent = `${br.emoji ? br.emoji+" " : ""}${br.name}`;
+  const sm = document.createElement("div");
+  sm.className = "muted";
+  sm.textContent = `${br.rarity} • ${fmtMoney(br.earn)}/sec base`;
+  nameBox.appendChild(nm);
+  nameBox.appendChild(sm);
+
+  const row = document.createElement("div");
+  row.className = "spawnRow";
+  row.appendChild(imgBox);
+  row.appendChild(nameBox);
+  card.appendChild(row);
+
+  const meta = document.createElement("div");
+  meta.className = "spawnMeta";
+  const chance = CAPTURE_CHANCE[br.rarity] ?? 0.1;
+  meta.innerHTML = `<span class="tag">Catch: ${(chance*100).toFixed(2)}%</span><span class="tag">Click to try</span>`;
+  card.appendChild(meta);
+
+  // position
+  const x = 10 + Math.random()*70;
+  const y = 20 + Math.random()*65;
+  card.style.left = x + "%";
+  card.style.top = y + "%";
+
+  const id = ++spawnId;
+  const spawnObj = { id, brainrotName: br.name, node: card };
+  spawns.push(spawnObj);
+
+  card.onclick = ()=>{
+    attemptCatch(br, card);
+  };
+
+  worldEl.appendChild(card);
+}
+
+function weightedPick(list){
+  // weights based on world modifiers + rarity
+  const w = WORLDS.find(x=>x.id===CURRENT_WORLD) || WORLDS[0];
+  const weights = list.map(br=>{
+    const m = (w.mod[br.rarity] ?? 1);
+    // base rarity weight (common heavier)
+    const base = 1 / Math.max(1, (rarityRank(br.rarity)+1));
+    return Math.max(0.00001, m * base);
+  });
+  const total = weights.reduce((a,b)=>a+b,0);
+  let r = Math.random()*total;
+  for(let i=0;i<list.length;i++){
+    r -= weights[i];
+    if(r<=0) return list[i];
+  }
+  return list[list.length-1];
+}
+
+function spawnTick(){
+  // keep up to 3 spawns
+  if(spawns.length >= MAX_SPAWNS) return;
+  const br = weightedPick(BRAINROTS);
+  makeSpawn(br);
+}
+
+function attemptCatch(br, node){
+  const chance = CAPTURE_CHANCE[br.rarity] ?? 0.1;
+  if(Math.random() <= chance){
+    const variant = rollVariant();
+    addOwned(br.name, variant, 1);
+    // auto-place if base has room
+    autoPlace(br.name, variant);
+    toast(`CAUGHT ✅ ${br.emoji || ""} ${br.name} (${variant})`);
+    node.remove();
+    spawns = spawns.filter(s=>s.node !== node);
+    saveState();
+    renderAll();
+  }else{
+    toast(`FLED ❌ ${br.emoji || ""} ${br.name}`);
+    node.remove();
+    spawns = spawns.filter(s=>s.node !== node);
+  }
+}
+
+function autoPlace(name, variant){
+  // if already placed count < owned count, place if empty slot
+  const empty = STATE.base.findIndex(s => s === null);
+  if(empty === -1) return;
+  // place one copy if storage has it unplaced
+  // (simple approach: always place immediately on catch if there is room)
+  STATE.base[empty] = { name, variant };
+}
+
+/* ===============================
+   BASE & EARNINGS
+================================ */
+function baseEarn(slot){
+  if(!slot) return 0;
+  const br = findBrainrot(slot.name);
+  if(!br) return 0;
+  const mult = VARIANT_MULT[slot.variant] ?? 1;
+  return br.earn * mult;
+}
+function currentEPS(){
+  return STATE.base.reduce((sum,slot)=>sum+baseEarn(slot),0);
+}
+
+function earnTick(){
+  const eps = currentEPS();
+  STATE.money += eps;
+  saveState();
+  updateTop();
+}
+
+function updateTop(){
+  moneyPill.textContent = "$" + fmtMoney(STATE.money);
+  epsPill.textContent = "+" + fmtMoney(currentEPS()) + "/sec";
+  rebirthPill.textContent = "Rebirth " + STATE.rebirth;
+}
+
+function renderBase(){
+  const slots = baseSlotsForRebirth(STATE.rebirth);
+  slotsInfo.textContent = `Slots: ${STATE.base.filter(Boolean).length}/${slots}`;
+  baseGrid.innerHTML = "";
+  for(let i=0;i<slots;i++){
+    const slot = document.createElement("div");
+    slot.className = "slot" + (STATE.base[i] ? " filled" : "");
+    const s = STATE.base[i];
+    if(!s){
+      slot.textContent = "Empty";
+    }else{
+      const br = findBrainrot(s.name);
+      slot.textContent = `${br?.emoji ? br.emoji+" " : ""}${s.name}\n(${s.variant})`;
+    }
+    slot.onclick = ()=>{
+      if(STATE.base[i]){
+        // remove from base (goes to storage already owned)
+        STATE.base[i] = null;
+        saveState();
+        renderAll();
+      }
+    };
+    baseGrid.appendChild(slot);
+  }
+}
+
+function renderOwned(){
+  // flatten owned map to rows
+  const rows = Object.entries(STATE.owned).map(([k,count])=>{
+    const [name,variant] = k.split("|");
+    const br = findBrainrot(name);
+    return { name, variant, count, br };
+  }).sort((a,b)=>{
+    const ra = rarityRank(a.br?.rarity ?? "Common");
+    const rb = rarityRank(b.br?.rarity ?? "Common");
+    if(ra !== rb) return rb - ra; // higher rarity first
+    return (a.name).localeCompare(b.name);
+  });
+
+  ownedInfo.textContent = "Owned: " + rows.reduce((s,r)=>s+r.count,0);
+
+  ownedList.innerHTML = "";
+  for(const r of rows){
+    const br = r.br || { emoji:"❓", rarity:"?", earn:0, img:null };
+    const row = document.createElement("div");
+    row.className = "row";
+
+    const mini = document.createElement("div");
+    mini.className = "mini";
+    if(br.img){
+      const im = document.createElement("img");
+      im.src = br.img;
+      im.alt = r.name;
+      mini.appendChild(im);
+    }else{
+      mini.textContent = br.emoji || "❓";
+    }
+
+    const info = document.createElement("div");
+    info.className = "info";
+    const title = document.createElement("div");
+    title.className = "title";
+    title.textContent = `${br.emoji ? br.emoji+" " : ""}${r.name} (${r.variant}) x${r.count}`;
+    const small = document.createElement("div");
+    small.className = "small";
+    small.textContent = `${br.rarity} • ${fmtMoney(br.earn * (VARIANT_MULT[r.variant]||1))}/sec if placed`;
+    info.appendChild(title);
+    info.appendChild(small);
+
+    const right = document.createElement("div");
+    right.className = "right";
+    const btn = document.createElement("button");
+    btn.className = "kbtn";
+    btn.textContent = "Place";
+    btn.onclick = ()=>{
+      // place one copy if base has empty slot
+      const empty = STATE.base.findIndex(x=>x===null);
+      if(empty === -1){
+        toast("Base is full.");
+        return;
+      }
+      // ensure we still own it
+      if(ownedCount(r.name, r.variant) <= 0){
+        toast("You don't own that anymore.");
+        return;
+      }
+      STATE.base[empty] = { name:r.name, variant:r.variant };
+      saveState();
+      renderAll();
+    };
+    right.appendChild(btn);
+
+    row.appendChild(mini);
+    row.appendChild(info);
+    row.appendChild(right);
+    ownedList.appendChild(row);
+  }
+}
+
+/* ===============================
+   REBIRTH
+================================ */
+const btnRebirth = document.getElementById("btnRebirth");
+
+function rebirthRequirementText(){
+  if(STATE.rebirth === 1){
+    return "Rebirth 2 requires: 2× Pipi Corni + 1× Pipi Kiwi → Slots become 12. (Resets money only)";
+  }
+  if(STATE.rebirth === 2){
+    return "Rebirth 3 requires: 1× Gangster Footera + 1× Burbaloli Luliloli → Slots become 14. (Resets money only)";
+  }
+  return "Max rebirth reached (for now).";
+}
+
+function canRebirth(){
+  if(STATE.rebirth === 1){
+    const pipiCorniTotal =
+      ownedCount("Pipi Corni","Normal")+ownedCount("Pipi Corni","Gold")+ownedCount("Pipi Corni","Diamond")+
+      ownedCount("Pipi Corni","Emerald")+ownedCount("Pipi Corni","Ruby")+ownedCount("Pipi Corni","Rainbow");
+    const pipiKiwiTotal =
+      ownedCount("Pipi Kiwi","Normal")+ownedCount("Pipi Kiwi","Gold")+ownedCount("Pipi Kiwi","Diamond")+
+      ownedCount("Pipi Kiwi","Emerald")+ownedCount("Pipi Kiwi","Ruby")+ownedCount("Pipi Kiwi","Rainbow");
+    return pipiCorniTotal >= 2 && pipiKiwiTotal >= 1;
+  }
+  if(STATE.rebirth === 2){
+    const gfTotal =
+      ownedCount("Gangster Footera","Normal")+ownedCount("Gangster Footera","Gold")+ownedCount("Gangster Footera","Diamond")+
+      ownedCount("Gangster Footera","Emerald")+ownedCount("Gangster Footera","Ruby")+ownedCount("Gangster Footera","Rainbow");
+    const burbTotal =
+      ownedCount("Burbaloli Luliloli","Normal")+ownedCount("Burbaloli Luliloli","Gold")+ownedCount("Burbaloli Luliloli","Diamond")+
+      ownedCount("Burbaloli Luliloli","Emerald")+ownedCount("Burbaloli Luliloli","Ruby")+ownedCount("Burbaloli Luliloli","Rainbow");
+    return gfTotal >= 1 && burbTotal >= 1;
+  }
+  return false;
+}
+
+btnRebirth.onclick = ()=>{
+  if(STATE.rebirth >= 3){
+    toast("No more rebirth levels yet.");
+    return;
+  }
+  if(!canRebirth()){
+    toast("You don't meet the rebirth requirement yet.");
+    return;
+  }
+  if(!confirm("Rebirth? This resets money to $0 but keeps ALL characters.")) return;
+
+  STATE.money = 0;
+  STATE.rebirth += 1;
+
+  // resize base slots and keep existing placements up to new size
+  const slots = baseSlotsForRebirth(STATE.rebirth);
+  const newBase = Array(slots).fill(null);
+  for(let i=0;i<Math.min(slots, STATE.base.length);i++){
+    newBase[i] = STATE.base[i] ?? null;
+  }
+  STATE.base = newBase;
+
+  saveState();
+  renderAll();
+  toast("REBIRTH COMPLETE 🔥");
+};
+
+/* ===============================
+   INDEX
+================================ */
+function countOwnedByName(name){
+  let total = 0;
+  for(const v of Object.keys(VARIANT_MULT)){
+    total += ownedCount(name,v);
+  }
+  return total;
+}
+
+function renderIndex(){
+  // stats
+  const totalOwned = Object.values(STATE.owned).reduce((a,b)=>a+b,0);
+  const variantKinds = Object.keys(STATE.owned).length;
+
+  statTotalOwned.textContent = totalOwned;
+  statVariantsOwned.textContent = variantKinds;
+  statMoney.textContent = "$" + fmtMoney(STATE.money);
+  statEPS.textContent = fmtMoney(currentEPS()) + "/sec";
+  statRebirth.textContent = STATE.rebirth;
+
+  // group by rarity
+  const groups = {};
+  for(const br of BRAINROTS){
+    groups[br.rarity] = groups[br.rarity] || [];
+    groups[br.rarity].push(br);
+  }
+  const order = ["Common","Uncommon","Rare","Epic","Legendary","Mythic","Godly","Secret","Exotic"];
+  indexByRarity.innerHTML = "";
+  for(const r of order){
+    const list = groups[r] || [];
+    if(list.length === 0) continue;
+
+    const header = document.createElement("div");
+    header.className = "row";
+    header.innerHTML = `<div class="info"><div class="title">${r}</div><div class="small">${list.length} characters</div></div>`;
+    indexByRarity.appendChild(header);
+
+    // show each as row
+    for(const br of list.sort((a,b)=>a.name.localeCompare(b.name))){
+      const row = document.createElement("div");
+      row.className = "row";
+
+      const mini = document.createElement("div");
+      mini.className = "mini";
+      if(br.img){
+        const im = document.createElement("img");
+        im.src = br.img;
+        im.alt = br.name;
+        mini.appendChild(im);
+      }else{
+        mini.textContent = br.emoji || "❓";
+      }
+
+      const info = document.createElement("div");
+      info.className = "info";
+      const title = document.createElement("div");
+      title.className = "title";
+      const owned = countOwnedByName(br.name);
+      title.textContent = `${br.emoji ? br.emoji+" " : ""}${br.name}`;
+      const small = document.createElement("div");
+      small.className = "small";
+      small.textContent = `${fmtMoney(br.earn)}/sec base • Owned: ${owned}`;
+      info.appendChild(title);
+      info.appendChild(small);
+
+      const right = document.createElement("div");
+      right.className = "right";
+      right.textContent = br.rarity;
+
+      row.appendChild(mini);
+      row.appendChild(info);
+      row.appendChild(right);
+      indexByRarity.appendChild(row);
+    }
+  }
+}
+
+/* ===============================
+   RENDER ALL
+================================ */
+function renderAll(){
+  updateTop();
+  renderBase();
+  renderOwned();
+  rebirthReq.textContent = rebirthRequirementText();
+  saveState();
+}
+
+/* ===============================
+   LOOPS
+================================ */
+initWorldSelect();
+renderAll();
+
+// earnings every second
+setInterval(earnTick, 1000);
+
+// spawn tick every 3 seconds (keeps max 3 on screen)
+setInterval(spawnTick, 3000);
+</script>
+
+</body>
+</html>
